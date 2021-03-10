@@ -13,26 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -x
 set -o errexit
 set -o nounset
 set -o pipefail
 
-CLONE_URL=$1
-REPOSITORY=$2
-TAG=$3
-GOLANG_VERSION="$4"
-
 MAKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-OUTPUT_DIR="${OUTPUT_DIR:-${MAKE_ROOT}/_output}"
-
-source "${MAKE_ROOT}/build/lib/clone.sh"
-source "${MAKE_ROOT}/build/lib/binaries.sh"
 source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
-mkdir -p $OUTPUT_DIR
-build::clone::release $CLONE_URL $REPOSITORY $TAG
-build::common::use_go_version $GOLANG_VERSION
-build::binaries::bins $MAKE_ROOT/$REPOSITORY $OUTPUT_DIR
+CLONE_URL="$1"
+GOLANG_VERSION="$2"
 
-build::gather_licenses $MAKE_ROOT/$REPOSITORY $MAKE_ROOT/_output "./images/build/go-runner/go-runner.go " 
+OUTPUT_DIR="${OUTPUT_DIR:-${MAKE_ROOT}/_output}"
+build::common::use_go_version $GOLANG_VERSION
+
+# go-licenses calls the main module command-line-arguments
+sed -i.bak 's/^command-line-arguments/k8s.io\/release\/images\/build\/go-runner/' "${OUTPUT_DIR}/attribution/go-license.csv"
+build::generate_attribution 'k8s.io/release/images/build/go-runner'
