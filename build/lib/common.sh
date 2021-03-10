@@ -67,15 +67,54 @@ function build::common::generate_shasum() {
   cd -
 }
 
-# TODO: replace with go licenses tool which was used to create ATTRIBUTION.txt files
+
 function build::gather_licenses() {
   local -r builddir=$1
   local -r outputdir=$2
+  local -r patterns=$3
+
+  mkdir -p "${outputdir}/attribution"
+  # attribution file generated uses the output go-deps and go-license to gather the neccessary
+  # data about each dependency to generate the amazon approved attribution.txt files
+  # go-deps is needed for module versions
+  # go-licenses are all the dependencies found from the module(s) that were passed in via patterns
+  (cd $builddir && go list -deps=true -json ./... | jq -s ''  > "${outputdir}/attribution/go-deps.json")
   
-  find $builddir \( -name 'LICENCE' -o -name 'LICENSE' \
-     -o -name 'LICENSE.md' -o -name 'LICENSE.txt' \
-     -o -name 'NOTICE' -o -name 'COPYING' -o -name 'NOTICE.txt' \
-     -o -name 'LICENSE.code' -o -name 'LICENCE.md' \) | while IFS= read -r NAME; do mkdir -p "${outputdir}/$(dirname $NAME)" && cp  "$NAME" "${outputdir}/${NAME}"; done
+  # go-licenses can be a bit noisy with its output and lot of it can be confusing 
+  # in general these end up being red-herrings
+  # if there is an issue generating the attribution.txt or if there are unexpected changes
+  # the output would be worth reviewing it
+  (cd $builddir && go-licenses save --force $patterns --save_path="${outputdir}/LICENSES" 2> "${outputdir}/attribution/go-license.out")
+  (cd $builddir && go-licenses csv $patterns > "${outputdir}/attribution/go-license.csv" 2>  "${outputdir}/attribution/go-license.out")
+
+  # go-license is pretty eager to copy src for certain license types
+  # when it does, it applies strange permissions to the copied files
+  # which makes deleting them later awkward
+  # this may change in the future with the following PR
+  # https://github.com/google/go-licenses/pull/28
+  #
+  chmod -R 777 "${outputdir}/LICENSES"  
+}
+
+function build::generate_attribution() {
+  local -r clone_url=$1
+
+  GOLANG_VERSION_TAG=$(go version | grep -o "go[0-9].* ")
+
+  generate-attribution $clone_url $GOLANG_VERSION_TAG
+}
+
+function build::diff_attribution() {
+  local -r existing=$1
+  local -r new=$2
+
+  diff $existing $new > /dev/null 2>&1 || error=$? 
+  if [ -n "${error-}" ]
+  then
+    echo "The newly generated ATTRIBUTION.txt is different than previous version."
+    echo "Please validate the difference and check in the new version."
+    exit $error
+  fi  
 }
 
 function build::common::use_go_version() {
