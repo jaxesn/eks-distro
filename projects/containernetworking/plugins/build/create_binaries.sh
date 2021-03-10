@@ -22,10 +22,10 @@ set -o pipefail
 REPO="$1"
 CLONE_URL="$2"
 TAG="$3"
+GOLANG_VERSION="$4"
 BIN_ROOT="_output/bin"
 BIN_PATH=$BIN_ROOT/$REPO
 
-GOLANG_VERSION="1.14"
 
 readonly SUPPORTED_PLATFORMS=(
   linux/amd64
@@ -48,7 +48,19 @@ function build::plugins::binaries(){
     mkdir -p ../${BIN_PATH}/${OS}-${ARCH}
     mv bin/* ../${BIN_PATH}/${OS}-${ARCH}
   done
-  build::gather_licenses ./ $MAKE_ROOT/LICENSES
+
+  # Pull licenses for the plugins we are building, similiar logic exist in build_linux.sh called above
+  PLUGINS="plugins/meta/* plugins/main/* plugins/ipam/*"
+  ALL_PLUGINS=""
+  for d in $PLUGINS; do
+    if [ -d "$d" ]; then
+      plugin="$(basename "$d")"
+      if [ "${plugin}" != "windows" ]; then
+        ALL_PLUGINS+="./$d "
+      fi
+    fi
+  done
+  build::gather_licenses ./ $MAKE_ROOT/_output "$ALL_PLUGINS"
   cd ..
   rm -rf $REPO
 }
