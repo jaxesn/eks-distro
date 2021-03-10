@@ -3,6 +3,7 @@ RELEASE_BRANCH?=1-18
 RELEASE?=$(shell cat $(BASE_DIRECTORY)/release/$(RELEASE_BRANCH)/RELEASE)
 ARTIFACT_BUCKET?=my-s3-bucket
 GIT_TAG?=$(shell cat GIT_TAG)
+GOLANG_VERSION?=1.13
 
 REPO=coredns
 COMPONENT=coredns/$(REPO)
@@ -30,7 +31,7 @@ endif
 
 .PHONY: binaries
 binaries:
-	build/create_binaries.sh $(CLONE_URL) $(REPO) $(GIT_TAG)
+	build/create_binaries.sh $(CLONE_URL) $(REPO) $(GIT_TAG) $(GOLANG_VERSION)
 
 .PHONY: local-images
 local-images: binaries
@@ -76,6 +77,10 @@ release: images
 
 .PHONY: all
 all: release
+
+.PHONY: generate-attribution
+generate-attribution: 
+	build/create_attribution.sh $(CLONE_URL) $(GOLANG_VERSION)
 
 .PHONY: clean
 clean: 

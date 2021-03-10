@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2020 Amazon.com Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE
-FROM $BASE_IMAGE
+set -x
+set -o errexit
+set -o nounset
+set -o pipefail
 
-RUN yum update -y
-RUN yum install -y ca-certificates && update-ca-trust
+MAKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
-FROM scratch
+CLONE_URL="$1"
+GOLANG_VERSION="$2"
 
-ARG TARGETARCH
-ARG TARGETOS
+build::common::use_go_version $GOLANG_VERSION
 
-COPY --from=0 /etc/ssl/certs /etc/ssl/certs
-COPY _output/bin/coredns/$TARGETOS-$TARGETARCH/coredns /coredns
-COPY _output/LICENSES /LICENSES
-COPY ATTRIBUTION.txt /ATTRIBUTION.txt
-
-EXPOSE 53 53/udp
-ENTRYPOINT ["/coredns"]
+build::generate_attribution $CLONE_URL
+build::diff_attribution "${MAKE_ROOT}/ATTRIBUTION.txt" "${MAKE_ROOT}/_output/attribution/ATTRIBUTION.txt"
