@@ -69,23 +69,22 @@ function build::common::generate_shasum() {
 
 
 function build::gather_licenses() {
-  local -r builddir=$1
-  local -r outputdir=$2
-  local -r patterns=$3
+  local -r outputdir=$1
+  local -r patterns=$2
 
   mkdir -p "${outputdir}/attribution"
   # attribution file generated uses the output go-deps and go-license to gather the neccessary
   # data about each dependency to generate the amazon approved attribution.txt files
   # go-deps is needed for module versions
   # go-licenses are all the dependencies found from the module(s) that were passed in via patterns
-  (cd $builddir && go list -deps=true -json ./... | jq -s ''  > "${outputdir}/attribution/go-deps.json")
+  go list -deps=true -json ./... | jq -s ''  > "${outputdir}/attribution/go-deps.json"
   
-  (cd $builddir && go-licenses save --force $patterns --save_path="${outputdir}/LICENSES")
+  go-licenses save --force $patterns --save_path="${outputdir}/LICENSES"
   
   # go-licenses can be a bit noisy with its output and lot of it can be confusing 
   # the following messags are safe to ignore since we do not need the license url for our process
   NOISY_MESSAGES="cannot determine URL for|Error discovering URL|unsupported package host"
-  (cd $builddir && go-licenses csv $patterns > "${outputdir}/attribution/go-license.csv" 2>  >(grep -vE "$NOISY_MESSAGES" >&2))
+  go-licenses csv $patterns > "${outputdir}/attribution/go-license.csv" 2>  >(grep -vE "$NOISY_MESSAGES" >&2)
 
   # go-license is pretty eager to copy src for certain license types
   # when it does, it applies strange permissions to the copied files
@@ -94,6 +93,11 @@ function build::gather_licenses() {
   # https://github.com/google/go-licenses/pull/28
   #
   chmod -R 777 "${outputdir}/LICENSES"  
+
+  # most of the packages show up the go-license.csv file as the module name
+  # from the go.mod file, storing that away since the source dirs usually get deleted
+  MODULE_NAME=$(go mod edit -json | jq -r '.Module.Path')
+  echo $MODULE_NAME > ${outputdir}/attribution/root-module.txt
 }
 
 function build::generate_attribution() {
@@ -102,6 +106,17 @@ function build::generate_attribution() {
   GOLANG_VERSION_TAG=$(go version | grep -o "go[0-9].* ")
 
   generate-attribution $clone_url $GOLANG_VERSION_TAG
+}
+
+function build::generate_and_diff_attribution(){
+  local -r project_root=$1
+  local -r golang_verson=$2
+  local -r root_module_name=${3:-$(cat ${project_root}/_output/attribution/root-module.txt)}
+
+  build::common::use_go_version $golang_verson
+
+  build::generate_attribution $root_module_name
+  build::diff_attribution "${project_root}/ATTRIBUTION.txt" "${project_root}/_output/attribution/ATTRIBUTION.txt"
 }
 
 function build::diff_attribution() {

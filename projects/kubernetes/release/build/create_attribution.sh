@@ -20,12 +20,10 @@ set -o pipefail
 MAKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
-CLONE_URL="$1"
-GOLANG_VERSION="$2"
+GOLANG_VERSION="$1"
 
-OUTPUT_DIR="${OUTPUT_DIR:-${MAKE_ROOT}/_output}"
-build::common::use_go_version $GOLANG_VERSION
+# go-licenses calls the main module command-line-arguments in the csv output
+MODULE_NAME=$(cat "${MAKE_ROOT}/_output/attribution/root-module.txt")
+sed -i.bak "s/^command-line-arguments/$MODULE_NAME/" "${OUTPUT_DIR}/attribution/go-license.csv"
 
-# go-licenses calls the main module command-line-arguments
-sed -i.bak 's/^command-line-arguments/k8s.io\/release\/images\/build\/go-runner/' "${OUTPUT_DIR}/attribution/go-license.csv"
-build::generate_attribution 'k8s.io/release/images/build/go-runner'
+build::generate_and_diff_attribution $MAKE_ROOT $GOLANG_VERSION

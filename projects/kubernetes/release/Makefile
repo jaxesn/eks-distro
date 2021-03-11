@@ -111,7 +111,7 @@ release: images
 
 .PHONY: generate-attribution
 generate-attribution: 
-	build/create_attribution.sh $(CLONE_URL) $(GOLANG_VERSION)
+	build/create_attribution.sh $(GOLANG_VERSION)
 
 .PHONY: all
 all: release
