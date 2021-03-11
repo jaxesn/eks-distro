@@ -80,7 +80,7 @@ all: release
 
 .PHONY: generate-attribution
 generate-attribution: 
-	build/create_attribution.sh $(CLONE_URL) $(GOLANG_VERSION)
+	build/create_attribution.sh $(REPO) $(GOLANG_VERSION)
 
 .PHONY: clean
 clean: 

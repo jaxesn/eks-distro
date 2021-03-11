@@ -20,9 +20,12 @@ set -o pipefail
 MAKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
-CLONE_URL="$1"
+REPO="$1"
 GOLANG_VERSION="$2"
 
 build::common::use_go_version $GOLANG_VERSION
 
-build::generate_attribution 'go.etcd.io/etcd'
+MODULE_NAME=$(cd $REPO && go mod edit -json | jq -r '.Module.Path')
+
+build::generate_attribution $MODULE_NAME
+build::diff_attribution "${MAKE_ROOT}/ATTRIBUTION.txt" "${MAKE_ROOT}/_output/attribution/ATTRIBUTION.txt"

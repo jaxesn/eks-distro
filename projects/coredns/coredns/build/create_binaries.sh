@@ -37,23 +37,23 @@ source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
 function build::coredns::binaries(){
   mkdir -p $BIN_PATH
-  git clone $CLONE_URL $REPO
+#  git clone $CLONE_URL $REPO
   cd "$REPO"
-  git checkout $TAG
-  build::common::use_go_version $GOLANG_VERSION
-  go mod vendor
-  for platform in "${SUPPORTED_PLATFORMS[@]}";
-  do
-    OS="$(cut -d '/' -f1 <<< ${platform})"
-    ARCH="$(cut -d '/' -f2 <<< ${platform})"
-    make SYSTEM="GOOS=\"$OS\" GOARCH=\"$ARCH\""
-    mkdir -p ../${BIN_PATH}/${OS}-${ARCH}
-    mv coredns ../${BIN_PATH}/${OS}-${ARCH}
-    make clean
-  done
+  # git checkout $TAG
+  # build::common::use_go_version $GOLANG_VERSION
+  # go mod vendor
+  # for platform in "${SUPPORTED_PLATFORMS[@]}";
+  # do
+  #   OS="$(cut -d '/' -f1 <<< ${platform})"
+  #   ARCH="$(cut -d '/' -f2 <<< ${platform})"
+  #   make SYSTEM="GOOS=\"$OS\" GOARCH=\"$ARCH\""
+  #   mkdir -p ../${BIN_PATH}/${OS}-${ARCH}
+  #   mv coredns ../${BIN_PATH}/${OS}-${ARCH}
+  #   make clean
+  # done
   build::gather_licenses ./ $MAKE_ROOT/_output ./coredns.go
   cd ..
-  rm -rf $REPO
+  #rm -rf $REPO
 }
 
 build::coredns::binaries

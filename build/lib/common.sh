@@ -80,12 +80,12 @@ function build::gather_licenses() {
   # go-licenses are all the dependencies found from the module(s) that were passed in via patterns
   (cd $builddir && go list -deps=true -json ./... | jq -s ''  > "${outputdir}/attribution/go-deps.json")
   
+  (cd $builddir && go-licenses save --force $patterns --save_path="${outputdir}/LICENSES")
+  
   # go-licenses can be a bit noisy with its output and lot of it can be confusing 
-  # in general these end up being red-herrings
-  # if there is an issue generating the attribution.txt or if there are unexpected changes
-  # the output would be worth reviewing it
-  (cd $builddir && go-licenses save --force $patterns --save_path="${outputdir}/LICENSES" 2> "${outputdir}/attribution/go-license.out")
-  (cd $builddir && go-licenses csv $patterns > "${outputdir}/attribution/go-license.csv" 2>  "${outputdir}/attribution/go-license.out")
+  # the following messags are safe to ignore since we do not need the license url for our process
+  NOISY_MESSAGES="cannot determine URL for|Error discovering URL|unsupported package host"
+  (cd $builddir && go-licenses csv $patterns > "${outputdir}/attribution/go-license.csv" 2>  >(grep -vE "$NOISY_MESSAGES" >&2))
 
   # go-license is pretty eager to copy src for certain license types
   # when it does, it applies strange permissions to the copied files
