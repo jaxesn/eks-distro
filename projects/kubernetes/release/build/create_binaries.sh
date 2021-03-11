@@ -35,4 +35,4 @@ build::clone::release $CLONE_URL $REPOSITORY $TAG
 build::common::use_go_version $GOLANG_VERSION
 build::binaries::bins $MAKE_ROOT/$REPOSITORY $OUTPUT_DIR
 
-build::gather_licenses $MAKE_ROOT/$REPOSITORY $MAKE_ROOT/_output "./images/build/go-runner/go-runner.go " 
+(cd $MAKE_ROOT/$REPOSITORY && build::gather_licenses $MAKE_ROOT/_output "./images/build/go-runner/go-runner.go") 

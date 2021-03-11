@@ -51,7 +51,7 @@ function build::etcd::binaries(){
     mv bin/* ../${BIN_PATH}/${OS}-${ARCH}
     make clean
   done
-  build::gather_licenses ./ $MAKE_ROOT/_output "./ ./etcdctl" 
+  build::gather_licenses $MAKE_ROOT/_output "./ ./etcdctl" 
   cd ..
   rm -rf $REPO
 }

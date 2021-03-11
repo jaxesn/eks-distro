@@ -3,6 +3,7 @@ RELEASE_BRANCH?=1-18
 RELEASE?=$(shell cat $(BASE_DIRECTORY)/release/$(RELEASE_BRANCH)/RELEASE)
 ARTIFACT_BUCKET?=my-s3-bucket
 GIT_TAG?=$(shell cat GIT_TAG)
+GOLANG_VERSION?="1.13"
 
 REPO=aws-iam-authenticator
 COMPONENT=kubernetes-sigs/$(REPO)
@@ -29,7 +30,7 @@ endif
 
 .PHONY: binaries
 binaries:
-	build/create_binaries.sh $(REPO) $(CLONE_URL) $(GIT_TAG)
+	build/create_binaries.sh $(REPO) $(CLONE_URL) $(GIT_TAG) $(GOLANG_VERSION)
 
 .PHONY: local-images
 local-images: binaries
@@ -82,6 +83,10 @@ release: images local-images tarballs
 .PHONY: all
 all: release
 
+.PHONY: generate-attribution
+generate-attribution: 
+	build/create_attribution.sh $(GOLANG_VERSION)
+	
 .PHONY: clean
 clean:
 	rm -rf $(REPO)

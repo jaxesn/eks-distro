@@ -49,7 +49,7 @@ function build::external-provisioner::binaries(){
     mv bin/* ../${BIN_PATH}/${OS}-${ARCH}
     make clean
   done
-  build::gather_licenses ./ $MAKE_ROOT/_output "./cmd/csi-provisioner"
+  build::gather_licenses $MAKE_ROOT/_output "./cmd/csi-provisioner"
   cd ..  
   rm -rf $REPO
 }

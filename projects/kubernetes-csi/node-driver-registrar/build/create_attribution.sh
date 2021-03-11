@@ -24,9 +24,10 @@ source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
 GOLANG_VERSION="$1"
 
-# go-licenses calls the main module command-line-arguments in the csv output
+# go-licenses calls adds an additonal cmd/csi-node-driver-registrar 
+# to the main module name in the csv output
 MODULE_NAME=$(cat "${ATTRIBUTION_DIR}/root-module.txt")
-SEARCH='command-line-arguments'
+SEARCH=$(build::common::re_quote "$MODULE_NAME/cmd/csi-node-driver-registrar")
 REPLACE=$(build::common::re_quote $MODULE_NAME)
 sed -i.bak "s/^$SEARCH/$REPLACE/" "${ATTRIBUTION_DIR}/go-license.csv"
 

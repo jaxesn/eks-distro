@@ -49,7 +49,7 @@ function build::external-attacher::binaries(){
     mv bin/* ../${BIN_PATH}/${OS}-${ARCH}
     make clean
   done
-  build::gather_licenses ./ $MAKE_ROOT/_output "./cmd/csi-attacher"
+  build::gather_licenses $MAKE_ROOT/_output "./cmd/csi-attacher"
   cd ..
   rm -rf $REPO
 }

@@ -54,7 +54,7 @@ function build::external-snapshotter::binaries(){
   # is no license file in the subfolder and go-license is not able to find it
   # manually copying the root license to the vendor directory
   cp LICENSE vendor/github.com/kubernetes-csi/external-snapshotter/
-  build::gather_licenses ./ $MAKE_ROOT/_output "./cmd/snapshot-controller ./cmd/csi-snapshotter ./cmd/snapshot-validation-webhook"
+  build::gather_licenses $MAKE_ROOT/_output "./cmd/snapshot-controller ./cmd/csi-snapshotter ./cmd/snapshot-validation-webhook"
   
   cd ..
   rm -rf $REPO

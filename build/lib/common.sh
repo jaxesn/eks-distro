@@ -156,3 +156,8 @@ function build::common::use_go_version() {
   # Adding to the beginning of PATH to allow for builds on specific version if it exists
   export PATH=${gobinarypath}:$PATH
 }
+
+function build::common::re_quote() {
+    local -r to_escape=$1
+    sed 's/[][()\.^$\/?*+]/\\&/g' <<< "$to_escape"
+}

@@ -60,7 +60,7 @@ function build::plugins::binaries(){
       fi
     fi
   done
-  build::gather_licenses ./ $MAKE_ROOT/_output "$ALL_PLUGINS"
+  build::gather_licenses $MAKE_ROOT/_output "$ALL_PLUGINS"
   cd ..
   rm -rf $REPO
 }

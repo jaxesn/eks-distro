@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+set -x
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -24,9 +24,10 @@ source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
 GOLANG_VERSION="$1"
 
-# go-licenses calls the main module command-line-arguments in the csv output
+# go-licenses calls adds an additonal cmd/livenessprobe 
+# to the main module name in the csv output
 MODULE_NAME=$(cat "${ATTRIBUTION_DIR}/root-module.txt")
-SEARCH='command-line-arguments'
+SEARCH=$(build::common::re_quote "$MODULE_NAME/cmd/livenessprobe")
 REPLACE=$(build::common::re_quote $MODULE_NAME)
 sed -i.bak "s/^$SEARCH/$REPLACE/" "${ATTRIBUTION_DIR}/go-license.csv"
 
