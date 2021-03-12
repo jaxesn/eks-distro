@@ -72,6 +72,14 @@ function build::gather_licenses() {
   local -r outputdir=$1
   local -r patterns=$2
 
+  # Force deps to only be pulled form vendor directories
+  # this is important in a couple cases where license files
+  # have to be manually created
+  export GOFLAGS=-mod=vendor
+  # force platform to be linux to ensure all deps are picked up
+  export GOOS=linux 
+  export GOARCH=amd64 
+
   mkdir -p "${outputdir}/attribution"
   # attribution file generated uses the output go-deps and go-license to gather the neccessary
   # data about each dependency to generate the amazon approved attribution.txt files
@@ -89,9 +97,8 @@ function build::gather_licenses() {
   # go-license is pretty eager to copy src for certain license types
   # when it does, it applies strange permissions to the copied files
   # which makes deleting them later awkward
-  # this may change in the future with the following PR
+  # this behavior may change in the future with the following PR
   # https://github.com/google/go-licenses/pull/28
-  #
   chmod -R 777 "${outputdir}/LICENSES"  
 
   # most of the packages show up the go-license.csv file as the module name
@@ -100,23 +107,17 @@ function build::gather_licenses() {
   echo $MODULE_NAME > ${outputdir}/attribution/root-module.txt
 }
 
-function build::generate_attribution() {
-  local -r clone_url=$1
-
-  GOLANG_VERSION_TAG=$(go version | grep -o "go[0-9].* ")
-
-  generate-attribution $clone_url $GOLANG_VERSION_TAG
-}
-
 function build::generate_and_diff_attribution(){
   local -r project_root=$1
   local -r golang_verson=$2
-  local -r root_module_name=${3:-$(cat ${project_root}/_output/attribution/root-module.txt)}
+  local -r output_directory=${3:-"${project_root}/_output"}
 
-  build::common::use_go_version $golang_verson
+  local -r root_module_name=$(cat ${output_directory}/attribution/root-module.txt)
+  local -r go_path=$(build::common::get_go_path $golang_verson) 
+  local -r golang_version_tag=$($go_path/go version | grep -o "go[0-9].* ")
 
-  build::generate_attribution $root_module_name
-  build::diff_attribution "${project_root}/ATTRIBUTION.txt" "${project_root}/_output/attribution/ATTRIBUTION.txt"
+  generate-attribution $root_module_name $project_root $golang_version_tag $output_directory
+  build::diff_attribution "${project_root}/ATTRIBUTION.txt" "${output_directory}/attribution/ATTRIBUTION.txt"
 }
 
 function build::diff_attribution() {
@@ -132,7 +133,7 @@ function build::diff_attribution() {
   fi  
 }
 
-function build::common::use_go_version() {
+function build::common::get_go_path() {
   local -r version=$1
   local gobinaryversion=""
 
@@ -151,7 +152,21 @@ function build::common::use_go_version() {
   fi
 
   # This is the path where the specific go binary versions reside in our builder-base image
-  local -r gobinarypath=/go/go${gobinaryversion}/bin
+  local -r gobinarypath="/go/go${gobinaryversion}/bin"
+  if [ -d "$gobinarypath" ]; then
+    echo $gobinarypath
+  else
+    # not in builder-base, probably running in dev environment
+    # return default go installation
+    local -r which_go=$(which go)
+    echo "$(dirname $which_go)"
+  fi
+}
+
+function build::common::use_go_version() {
+  local -r version=$1
+
+  local -r gobinarypath=$(build::common::get_go_path $version)
   echo "Adding $gobinarypath to PATH"
   # Adding to the beginning of PATH to allow for builds on specific version if it exists
   export PATH=${gobinarypath}:$PATH

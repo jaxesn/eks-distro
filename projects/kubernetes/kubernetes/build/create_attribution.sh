@@ -12,37 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -x
 set -o errexit
 set -o nounset
 set -o pipefail
 
-RELEASE_BRANCH="$1"
-
 MAKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-GIT_TAG="$(cat ${MAKE_ROOT}/${RELEASE_BRANCH}/GIT_TAG)"
-
-source "${MAKE_ROOT}/../../../build/lib/common.sh"
 source "${MAKE_ROOT}/build/lib/init.sh"
-source "${MAKE_ROOT}/build/lib/tarballs.sh"
+source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
-if [ ! -d ${OUTPUT_DIR}/${RELEASE_BRANCH} ]; then
-    echo "${OUTPUT_DIR}/${RELEASE_BRANCH} not present!"
-    exit 1
-fi
-
+RELEASE_BRANCH="$1"
+GOLANG_VERSION=$(build::binaries::get_go_version_k8s "$RELEASE_BRANCH")
 OUTPUT_RELEASE_DIR="${OUTPUT_DIR}/${RELEASE_BRANCH}"
-BIN="${OUTPUT_RELEASE_DIR}/bin" 
 
-cp -rf "${OUTPUT_RELEASE_DIR}/LICENSES" $BIN 
-cp "${OUTPUT_RELEASE_DIR}/ATTRIBUTION.txt" $BIN  
-
-build::common::ensure_tar
-build::tarballs::create_tarballs $BIN $OUTPUT_RELEASE_DIR
-git \
-    -C $SOURCE_DIR \
-    archive \
-    --format=tar.gz \
-    --output=${OUTPUT_DIR}/${RELEASE_BRANCH}/kubernetes-src.tar.gz \
-    HEAD
+build::generate_and_diff_attribution $MAKE_ROOT/$RELEASE_BRANCH $GOLANG_VERSION $OUTPUT_RELEASE_DIR
