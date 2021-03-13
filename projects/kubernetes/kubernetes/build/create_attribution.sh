@@ -25,4 +25,10 @@ RELEASE_BRANCH="$1"
 GOLANG_VERSION=$(build::binaries::get_go_version_k8s "$RELEASE_BRANCH")
 OUTPUT_RELEASE_DIR="${OUTPUT_DIR}/${RELEASE_BRANCH}"
 
+# a number of k8s.io dependencies which come from the main repo show
+# up in the list and since they are in the repo they have no version
+# set the rootmodule name to k8s.io to force all projects with that 
+# prefix and no version to use the k8s git_tag version
+echo "k8s.io" > ${OUTPUT_RELEASE_DIR}/attribution/root-module.txt
+
 build::generate_and_diff_attribution $MAKE_ROOT/$RELEASE_BRANCH $GOLANG_VERSION $OUTPUT_RELEASE_DIR

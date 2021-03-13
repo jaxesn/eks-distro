@@ -54,6 +54,7 @@ function build::metrics-server::binaries(){
     mv $REPO/metrics-server $BIN_PATH/$OS-$ARCH/metrics-server
     make -C $REPO clean
   done
+  (cd $REPO && go mod vendor)
   (cd $REPO && build::gather_licenses $MAKE_ROOT/_output "./cmd/metrics-server")
   rm -rf "$REPO"
 }

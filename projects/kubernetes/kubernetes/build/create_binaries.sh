@@ -29,18 +29,18 @@ source "${MAKE_ROOT}/../../../build/lib/common.sh"
 
 RELEASE_FILE="${MAKE_ROOT}/${RELEASE_BRANCH}/RELEASE"
 PATCH_DIR=${MAKE_ROOT}/${RELEASE_BRANCH}/patches
-# export KUBE_GIT_VERSION=$(build::version::kube_git_version $GIT_TAG $RELEASE_FILE $RELEASE_BRANCH)
-# if [ -d ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin ]; then
-#     echo "${OUTPUT_DIR}/${RELEASE_BRANCH}/bin already exists. Run 'make clean' before rebuilding"
-#     exit 0
-# fi
-# build::git::clone "$CLONE_URL" "$SOURCE_DIR"
-# build::git::patch "$SOURCE_DIR" "$GIT_TAG" "$PATCH_DIR"
-# build::binaries::use_go_version_k8s "$RELEASE_BRANCH"
-# build::binaries::kube_bins "$SOURCE_DIR"
+export KUBE_GIT_VERSION=$(build::version::kube_git_version $GIT_TAG $RELEASE_FILE $RELEASE_BRANCH)
+if [ -d ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin ]; then
+    echo "${OUTPUT_DIR}/${RELEASE_BRANCH}/bin already exists. Run 'make clean' before rebuilding"
+    exit 0
+fi
+build::git::clone "$CLONE_URL" "$SOURCE_DIR"
+build::git::patch "$SOURCE_DIR" "$GIT_TAG" "$PATCH_DIR"
+build::binaries::use_go_version_k8s "$RELEASE_BRANCH"
+build::binaries::kube_bins "$SOURCE_DIR"
 
-# mkdir -p ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin
-# cp -r ${SOURCE_DIR}/_output/local/bin/* ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin
+mkdir -p ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin
+cp -r ${SOURCE_DIR}/_output/local/bin/* ${OUTPUT_DIR}/${RELEASE_BRANCH}/bin
 
 # The heketi/heketi dependency is dual licensed between Apache 2.0 or LGPLv3+
 # this was done at the request of the kubernetes project since the orginial licese
@@ -49,7 +49,7 @@ PATCH_DIR=${MAKE_ROOT}/${RELEASE_BRANCH}/patches
 # https://github.com/heketi/heketi/pull/1419
 # https://github.com/kubernetes/kubernetes/pull/70828
 # Copy the apache2 license into place in the vendor directory
-cp $REPOSITORY/vendor/github.com/heketi/heketi/LICENSE-APACHE2 $REPOSITORY/vendor/github.com/heketi/heketi/client/api/go-client/LICENSE 
+cp $REPOSITORY/vendor/github.com/heketi/heketi/LICENSE-APACHE2 $REPOSITORY/vendor/github.com/heketi/heketi/LICENSE 
 
 PATTERNS="./cmd/kubelet ./cmd/kube-proxy ./cmd/kubeadm ./cmd/kubectl ./cmd/kube-apiserver ./cmd/kube-controller-manager ./cmd/kube-scheduler"
 (cd $REPOSITORY && build::gather_licenses ${OUTPUT_DIR}/${RELEASE_BRANCH} "$PATTERNS")

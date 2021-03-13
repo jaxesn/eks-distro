@@ -72,6 +72,13 @@ function build::gather_licenses() {
   local -r outputdir=$1
   local -r patterns=$2
 
+  # reset the gopath change to make sure and always use
+  # the latest go for generating deps list
+  # older versions behave differently in some cases
+  local -r quoted_go_path=$(build::common::re_quote $GOPATH)
+  export PATH=$(echo "$PATH" | sed -e "s/^$quoted_go_path\/go[0-9\.]*\/bin://")
+  go version
+  
   # Force deps to only be pulled form vendor directories
   # this is important in a couple cases where license files
   # have to be manually created
@@ -117,7 +124,8 @@ function build::generate_and_diff_attribution(){
   local -r golang_version_tag=$($go_path/go version | grep -o "go[0-9].* ")
 
   generate-attribution $root_module_name $project_root $golang_version_tag $output_directory
-  build::diff_attribution "${project_root}/ATTRIBUTION.txt" "${output_directory}/attribution/ATTRIBUTION.txt"
+  #build::diff_attribution "${project_root}/ATTRIBUTION.txt" "${output_directory}/attribution/ATTRIBUTION.txt"
+  cp -f "${output_directory}/attribution/ATTRIBUTION.txt" "${project_root}/ATTRIBUTION.txt"
 }
 
 function build::diff_attribution() {
@@ -152,7 +160,7 @@ function build::common::get_go_path() {
   fi
 
   # This is the path where the specific go binary versions reside in our builder-base image
-  local -r gobinarypath="/go/go${gobinaryversion}/bin"
+  local -r gobinarypath="$GOPATH/go${gobinaryversion}/bin"
   if [ -d "$gobinarypath" ]; then
     echo $gobinarypath
   else
