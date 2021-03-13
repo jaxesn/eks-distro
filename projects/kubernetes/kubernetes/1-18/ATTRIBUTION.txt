@@ -140,10 +140,7 @@ https://github.com/gophercloud/gophercloud
 ** github.com/grpc-ecosystem/go-grpc-prometheus; version v1.2.0 --
 https://github.com/grpc-ecosystem/go-grpc-prometheus
 
-** github.com/heketi/heketi/client/api/go-client; version v9.0.1-0.20190917153846-c2e2a4ab7ab9+incompatible --
-https://github.com/heketi/heketi
-
-** github.com/heketi/heketi/pkg; version v9.0.1-0.20190917153846-c2e2a4ab7ab9+incompatible --
+** github.com/heketi/heketi; version v9.0.1-0.20190917153846-c2e2a4ab7ab9+incompatible --
 https://github.com/heketi/heketi
 
 ** github.com/jmespath/go-jmespath; version v0.3.0 --
@@ -902,7 +899,7 @@ https://github.com/aws/aws-sdk-go
 ** github.com/liggitt/tabwriter; version v0.0.0-20181228230101-89fcab3d43de --
 https://github.com/liggitt/tabwriter
 
-** golang.org/go; version go1.15.5 --
+** golang.org/go; version go1.13.15 --
 https://github.com/golang/go
 
 ** golang.org/x/crypto; version v0.0.0-20200220183623-bac4c82f6975 --

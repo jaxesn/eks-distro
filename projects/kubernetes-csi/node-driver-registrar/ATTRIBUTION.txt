@@ -300,11 +300,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------
 
-** golang.org/go; version go1.15.5 --
+** golang.org/go; version go1.15.6 --
 https://github.com/golang/go
 
 ** golang.org/x/net; version v0.0.0-20200707034311-ab3426394381 --
 https://go.googlesource.com/net
+
+** golang.org/x/sys; version v0.0.0-20200622214017-ed371f2e16b4 --
+https://go.googlesource.com/sys
 
 ** golang.org/x/text; version v0.3.3 --
 https://go.googlesource.com/text
